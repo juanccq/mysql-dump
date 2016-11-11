@@ -5,7 +5,7 @@ $db = new DBBackup(array(
 	'host' => '127.0.0.1',
 	'user' => 'root',
 	'password' => 'mysql',
-	'database' => 'control2'
+	'database' => 'expresot_bus'
 ));
 $backup = $db->backup();
 

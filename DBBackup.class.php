@@ -6,6 +6,8 @@
  * @category Database
  * @copyright No one. You can copy, edit, do anything you want. If you change anything to better, please let me know.
  *
+ * @modifiedBy Juan Carlos Choque Quispe
+ * @description Update class methods for compatibility with PHP 5.6
  */
 Class DBBackup {
 	/**
@@ -80,7 +82,7 @@ Class DBBackup {
 	 * @param Array $args{host, driver, user, password, database}
 	 * @example $db = new DBBackup(array('host'=>'my_host', 'driver'=>'bd_type(mysql)', 'user'=>'db_user', 'password'=>'db_password', 'database'=>'db_name'));
 	 */
-	public function DBBackup($args){
+	public function __construct($args){
 		if(!$args['host']) $this->error[] = 'Parameter host missing';
 		if(!$args['user']) $this->error[] = 'Parameter user missing';
 		if(!isset($args['password'])) $this->error[] = 'Parameter password missing';
@@ -97,7 +99,7 @@ Class DBBackup {
 		$this->password = $args['password'];
 		$this->dbName = $args['database'];
 
-		$this->final = 'CREATE DATABASE ' . $this->dbName.";\n\n";
+		$this->final = 'CREATE DATABASE IF NOT EXISTS ' . $this->dbName.";\n\n";
 		$this->final .= 'USE ' . $this->dbName.";\n\n";
 		$this->final .= 'SET FOREIGN_KEY_CHECKS = 0;'."\n\n";
 
@@ -133,6 +135,7 @@ Class DBBackup {
 	private function generate(){
 		foreach ($this->tables as $tbl) {
 			$this->final .= '#--CREATING TABLE '.$tbl['name']."\n";
+			$this->final .= 'DROP TABLE IF EXISTS ' . $tbl['name'] .";\n";
 			$this->final .= $tbl['create'] . ";\n\n";
 			$this->final .= '#--INSERTING DATA INTO '.$tbl['name']."\n";
 			$this->final .= $tbl['data']."\n\n\n";
@@ -213,10 +216,15 @@ Class DBBackup {
 			$q = $stmt->fetchAll(PDO::FETCH_NUM);
 			$data = '';
 			foreach ($q as $pieces){
-				foreach($pieces as &$value){
-					$value = htmlentities(addslashes($value));
+				$inValues = array();
+				foreach($pieces as $value){
+					if( is_null( $value ) ) {
+						$inValues[] = 'NULL';
+					} else {
+						$inValues[] = "'".addslashes($value)."'";
+					}
 				}
-				$data .= 'INSERT INTO '. $tableName .' VALUES (\'' . implode('\',\'', $pieces) . '\');'."\n";
+				$data .= 'INSERT INTO '. $tableName .' VALUES (' . $inValues . ');'."\n";
 			}
 			return $data;
 		} catch (PDOException $e){
