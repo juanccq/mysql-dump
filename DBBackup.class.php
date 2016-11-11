@@ -128,6 +128,24 @@ Class DBBackup {
 	}
 
 	/**
+	 * Method to compress the dump result
+	 *
+	 */
+	public function compress( $filename ) {
+		if( count( $this -> error ) > 0 ) {
+			return array( 'error' => true, 'msg' => $this -> error );
+		}
+
+		$fp = gzopen( $filename, 'w9' );
+
+		gzwrite( $fp, $this -> final );
+
+		gzclose( $fp );
+
+		return true;
+	}
+
+	/**
 	 *
 	 * Generate backup string
 	 * @uses Private use
@@ -224,7 +242,7 @@ Class DBBackup {
 						$inValues[] = "'".addslashes($value)."'";
 					}
 				}
-				$data .= 'INSERT INTO '. $tableName .' VALUES (' . $inValues . ');'."\n";
+				$data .= 'INSERT INTO '. $tableName .' VALUES (' . implode( ',', $inValues ) . ');'."\n";
 			}
 			return $data;
 		} catch (PDOException $e){

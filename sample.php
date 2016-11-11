@@ -5,7 +5,7 @@ $db = new DBBackup(array(
 	'host' => '127.0.0.1',
 	'user' => 'root',
 	'password' => 'mysql',
-	'database' => 'expresot_bus'
+	'database' => 'parte201_bus'
 ));
 $backup = $db->backup();
 
@@ -20,6 +20,8 @@ if(!$backup['error']){
 
 
 	file_put_contents('db-dump-' . $date . '.sql', $backup['msg'] );
+
+	//$db -> compress( 'db-dump-' . $date . '.gz' );
 } else {
 	echo 'An error has ocurred.';
 }
